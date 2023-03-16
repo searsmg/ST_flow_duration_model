@@ -39,7 +39,7 @@ tmap_mode('view')
 
 ```
 
-```{r}
+```{r fig, fig.width= 16, fig.height=14}
 
 tm_shape(wbdhu8) +
   tm_borders() +

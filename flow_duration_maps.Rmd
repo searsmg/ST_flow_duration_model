@@ -1,6 +1,6 @@
 ---
-title: "ST_flow_duration_maps"
-author: "Megan Sears"
+title: "Streamtracker flow duration map"
+author: "David Peterson, Stephanie Kampf, Megan Sears"
 date: '`r Sys.Date()`'
 output: html_document
 editor_options: 
@@ -8,7 +8,9 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = F)
+knitr::opts_chunk$set(echo = F,
+                      message = F,
+                      warning = F)
 
 library(tidyverse)
 library(mapview)
@@ -18,50 +20,39 @@ library(raster)
 library(sf)
 library(here)
 library(rgdal)
-library(shiny)
 
 ```
 
-```{r maps}
-ui <- fluidPage(
-  titlePanel('Stream Tracker Flow Duration Model'),
-  
-)
-
-
+```{r maps, echo = F, message = F, warning = F, include = F}
 
 sensors <- st_read(here('data', 'Sensors.shp'))
-nhd_hr <- readOGR(here('data', 'NHD_HR_flowlines.shp'))
-nhd_mr <- st_read(here('data', 'NHD_MR_flowlines.shp'))
+#nhd_hr <- readOGR(here('data', 'NHD_HR_flowlines.shp'))
+nhd_mr <- readOGR(here('data', 'NHD_MR_flowlines.shp'))
 st_sites <- st_read(here('data', 'ST Sites.shp'))
 st_test_sites <- st_read(here('data', 'ST Test Sites.shp'))
 wbdhu8 <- st_read(here('data', 'WBDHU8.shp'))
 
 #read in FF_predictions raster
-
-
-mapviewOptions(basemaps = c("Esri.WorldShadedRelief", "OpenStreetMap.DE"),
-               layers.control.pos = "topright")
-
-mapview(sensors) + 
-  mapview(st_sites) +
-  mapview(st_test_sites) +
-  mapview(wbdhu8) +
-  mapview(nhd_hr)
+ff <- raster(here('data', "predicted_flow_fraction.tif"))
 
 tmap_mode('view')
 
+```
+
+```{r}
+
 tm_shape(wbdhu8) +
-  tm_polygons() +
+  tm_borders() +
+  tm_shape(ff) +
+  tm_raster(title = 'Predicted flow fraction') +
   tm_shape(sensors) +
   tm_symbols(col='blue', size=2) +
   tm_shape(st_sites) +
   tm_symbols() + 
   tm_shape(st_test_sites) +
   tm_symbols() +
-  tm_shape(nhd_hr) +
+  tm_shape(nhd_mr) +
   tm_lines()
-
 
 ```
 

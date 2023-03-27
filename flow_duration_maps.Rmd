@@ -27,15 +27,24 @@ library(rgdal)
 
 sensors <- st_read(here('data', 'Sensors.shp'))
 #nhd_hr <- readOGR(here('data', 'NHD_HR_flowlines.shp'))
-nhd_mr <- readOGR(here('data', 'NHD_MR_flowlines.shp'))
+#nhd_mr <- readOGR(here('data', 'NHD_MR_flowlines.shp'))
 st_sites <- st_read(here('data', 'ST Sites.shp'))
 st_test_sites <- st_read(here('data', 'ST Test Sites.shp'))
 wbdhu8 <- st_read(here('data', 'WBDHU8.shp'))
 
 #read in FF_predictions raster
-ff <- raster(here('data', "predicted_flow_fraction.tif"))
+ff <- raster(here('data', "predicted_flow_fraction.tif")) 
 
-tmap_mode('view')
+crs_target <- CRS("+init=EPSG:4269")
+
+ff2 <- projectRaster(ff, crs = crs_target)
+
+huc2 <- wbdhu8 %>%
+  filter(OBJECTID == 21)
+
+ff3 <- crop(ff2, huc2)
+
+mapview(ff3) #+ mapview(nhd_hr)
 
 ```
 

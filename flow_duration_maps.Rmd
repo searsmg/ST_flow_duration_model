@@ -33,37 +33,95 @@ st_test_sites <- st_read(here('data', 'ST Test Sites.shp'))
 wbdhu8 <- st_read(here('data', 'WBDHU8.shp'))
 
 #read in FF_predictions raster
-ff <- raster(here('data', "predicted_flow_fraction.tif")) 
+ff <- raster(here('data', "predicted_flow_fraction.tif"))
+
+ff[ff < 0] <- NA
 
 crs_target <- CRS("+init=EPSG:4269")
 
-ff2 <- projectRaster(ff, crs = crs_target)
+ff <- projectRaster(ff, crs = crs_target)
 
-huc2 <- wbdhu8 %>%
+# 21
+huc21 <- wbdhu8 %>%
   filter(OBJECTID == 21)
 
-ff3 <- crop(ff2, huc2)
+ff_21 <- crop(ff, huc21)
 
-mapview(ff3) #+ mapview(nhd_hr)
+mapview(ff_21, maxpixels =  9766632) 
+
+# 19
+huc19 <- wbdhu8 %>%
+  filter(OBJECTID == 19)
+
+ff_19 <- crop(ff, huc19)
+
+mapview(ff_19, maxpixels = 5822533)
+
+# 76
+huc76 <- wbdhu8 %>%
+  filter(OBJECTID == 76)
+
+ff_76 <- crop(ff, huc76)
+
+mapview(ff_76, maxpixels =  3132435)
+
+# 77
+huc77 <- wbdhu8 %>%
+  filter(OBJECTID == 77)
+
+ff_77 <- crop(ff, huc77)
+
+mapview(ff_77, maxpixels =  4437807)
+
+# 78
+huc78 <- wbdhu8 %>%
+  filter(OBJECTID == 78)
+
+ff_78 <- crop(ff, huc78)
+
+mapview(ff_78, maxpixels =  11794956)
+
+# 91
+huc91 <- wbdhu8 %>%
+  filter(OBJECTID == 91)
+
+ff_91 <- crop(ff, huc91)
+
+mapview(ff_91, maxpixels =  12439104)
+
+
 
 ```
 
 ```{r fig, fig.width= 12, fig.height=10}
 
-tm_shape(wbdhu8) +
-  tm_borders() +
-  tm_shape(sensors) +
-  tm_symbols(col='blue', size=0.01) +
-  tm_shape(st_sites) +
-  tm_symbols(size = 0.01) + 
-  tm_shape(st_test_sites) +
-  tm_symbols(size = 0.01) +
-  tm_shape(nhd_mr) +
-  tm_lines() +
-  tm_shape(ff) +
-  tm_raster(title = 'Predicted flow fraction',
-            palette = "RdYlBu",
-            breaks = seq(-1,1, by=.2)) 
+# tm_shape(wbdhu8) +
+#   tm_borders() +
+#   tm_shape(sensors) +
+#   tm_symbols(col='blue', size=0.01) +
+#   tm_shape(st_sites) +
+#   tm_symbols(size = 0.01) + 
+#   tm_shape(st_test_sites) +
+#   tm_symbols(size = 0.01) +
+#   tm_shape(nhd_mr) +
+#   tm_lines() +
+#   tm_shape(ff) +
+#   tm_raster(title = 'Predicted flow fraction',
+#             palette = "RdYlBu",
+#             breaks = seq(-1,1, by=.2)) 
+
+# work with mapview
+mapview(ff_19, maxpixels = 5822533) +
+  mapview(ff_21, maxpixels =  9766632) +
+  mapview(ff_76, maxpixels =  3132435) +
+  mapview(ff_77, maxpixels =  4437807) +
+  mapview(ff_78, maxpixels =  11794956) +
+  mapview(ff_91, maxpixels =  12439104)
+
+mapviewOptions(georaster = TRUE,
+               mapview.maxpixels = 83352564)
+  
+mapview(ff) 
 
 ```
 

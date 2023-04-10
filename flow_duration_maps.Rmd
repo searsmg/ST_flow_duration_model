@@ -20,14 +20,17 @@ library(raster)
 library(sf)
 library(here)
 library(rgdal)
+library(leaflet)
+library(htmltools)
+library(leafem)
 
 ```
 
 ```{r maps, echo = F, message = F, warning = F, include = F}
 
-sensors <- st_read(here('data', 'Sensors.shp'))
+sensors <- st_read(here('data', 'sensor_st_pts.shp'))
 #nhd_hr <- readOGR(here('data', 'NHD_HR_flowlines.shp'))
-#nhd_mr <- readOGR(here('data', 'NHD_MR_flowlines.shp'))
+nhd_mr <- readOGR(here('data', 'NHD_MR_flowlines.shp'))
 st_sites <- st_read(here('data', 'ST Sites.shp'))
 st_test_sites <- st_read(here('data', 'ST Test Sites.shp'))
 wbdhu8 <- st_read(here('data', 'WBDHU8.shp'))
@@ -40,56 +43,6 @@ ff[ff < 0] <- NA
 crs_target <- CRS("+init=EPSG:4269")
 
 ff <- projectRaster(ff, crs = crs_target)
-
-# 21
-huc21 <- wbdhu8 %>%
-  filter(OBJECTID == 21)
-
-ff_21 <- crop(ff, huc21)
-
-mapview(ff_21, maxpixels =  9766632) 
-
-# 19
-huc19 <- wbdhu8 %>%
-  filter(OBJECTID == 19)
-
-ff_19 <- crop(ff, huc19)
-
-mapview(ff_19, maxpixels = 5822533)
-
-# 76
-huc76 <- wbdhu8 %>%
-  filter(OBJECTID == 76)
-
-ff_76 <- crop(ff, huc76)
-
-mapview(ff_76, maxpixels =  3132435)
-
-# 77
-huc77 <- wbdhu8 %>%
-  filter(OBJECTID == 77)
-
-ff_77 <- crop(ff, huc77)
-
-mapview(ff_77, maxpixels =  4437807)
-
-# 78
-huc78 <- wbdhu8 %>%
-  filter(OBJECTID == 78)
-
-ff_78 <- crop(ff, huc78)
-
-mapview(ff_78, maxpixels =  11794956)
-
-# 91
-huc91 <- wbdhu8 %>%
-  filter(OBJECTID == 91)
-
-ff_91 <- crop(ff, huc91)
-
-mapview(ff_91, maxpixels =  12439104)
-
-
 
 ```
 
@@ -121,7 +74,44 @@ mapview(ff_19, maxpixels = 5822533) +
 mapviewOptions(georaster = TRUE,
                mapview.maxpixels = 83352564)
   
-mapview(ff) 
+mapview(ff, maxpixels =  65831652) 
+
+```
+
+Try with leaflet
+
+```{r leaf}
+
+st_sites %>% st_transform(., '+proj=longlat +datum=NAD83 +no_defs')
+
+# 3857 
+ff <- projectRaster(ff, crs = 3857)
+
+colores <- c('#FF2B18', '#FF8C0B', '#FDD11C', '#E9FD49', '#BEFD97', '#7BFDD6',
+                      '#2FE8FF', '#62A9FE', '#6A68FE', '#5813FC')
+at <- seq(0, 1, 0.1)
+cb <- colorBin(palette = colores, bins = at, domain = at,
+               na.color = 'transparent')
+
+map <- leaflet(sensors) %>%
+  addProviderTiles(providers$CartoDB.Positron) %>% 
+  addCircles(popup = ~htmlEscape(site)) %>%
+  addPolygons(data = wbdhu8,
+              color = 'black',
+              weight = 2,
+              fill = F) %>%
+  addPolylines(data = nhd_mr,
+               color = 'black',
+               weight = 0.5) %>%
+  addRasterImage(ff,
+                maxBytes = 16852306,
+                colors = cb,
+                project = F) %>%
+  addLegend(pal = cb,
+           values = at,
+           title = 'Flow fraction')
+
+map
 
 ```
 

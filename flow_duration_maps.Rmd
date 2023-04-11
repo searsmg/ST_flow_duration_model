@@ -31,8 +31,8 @@ library(leafem)
 sensors <- st_read(here('data', 'sensor_st_pts.shp'))
 #nhd_hr <- readOGR(here('data', 'NHD_HR_flowlines.shp'))
 nhd_mr <- readOGR(here('data', 'NHD_MR_flowlines.shp'))
-st_sites <- st_read(here('data', 'ST Sites.shp'))
-st_test_sites <- st_read(here('data', 'ST Test Sites.shp'))
+#st_sites <- st_read(here('data', 'ST Sites.shp'))
+#st_test_sites <- st_read(here('data', 'ST Test Sites.shp'))
 wbdhu8 <- st_read(here('data', 'WBDHU8.shp'))
 
 #read in FF_predictions raster
@@ -48,10 +48,15 @@ ff <- projectRaster(ff, crs = crs_target)
 
 ```{r process, echo = F, message = F, warning = F, include = F}
 
-st_sites %>% st_transform(., '+proj=longlat +datum=NAD83 +no_defs')
+#st_sites %>% st_transform(., '+proj=longlat +datum=NAD83 +no_defs')
+
 
 # 3857 
 ff <- projectRaster(ff, crs = 3857)
+#sensors <- st_transform(sensors, 3857)
+#wbdhu8 <- st_transform(wbdhu8, 3857)
+#nhd_mr <- st_crs(3857) 
+#nhd_mr <- st_transform(nhd_mr, 3857)
 
 colores <- c('#FF2B18', '#FF8C0B', '#FDD11C', '#E9FD49', '#BEFD97', '#7BFDD6',
                       '#2FE8FF', '#62A9FE', '#6A68FE', '#5813FC')
@@ -74,7 +79,8 @@ map <- leaflet(sensors) %>%
               fill = F) %>%
   addPolylines(data = nhd_mr,
                color = 'black',
-               weight = 0.5) %>%
+               weight = 1,
+               popup = ~htmlEscape(paste('NHD ID:', GNIS_ID))) %>%
   addRasterImage(ff,
                 maxBytes = 16852306,
                 colors = cb,

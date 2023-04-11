@@ -46,38 +46,6 @@ ff <- projectRaster(ff, crs = crs_target)
 
 ```
 
-```{r fig, fig.width= 12, fig.height=10}
-
-# tm_shape(wbdhu8) +
-#   tm_borders() +
-#   tm_shape(sensors) +
-#   tm_symbols(col='blue', size=0.01) +
-#   tm_shape(st_sites) +
-#   tm_symbols(size = 0.01) + 
-#   tm_shape(st_test_sites) +
-#   tm_symbols(size = 0.01) +
-#   tm_shape(nhd_mr) +
-#   tm_lines() +
-#   tm_shape(ff) +
-#   tm_raster(title = 'Predicted flow fraction',
-#             palette = "RdYlBu",
-#             breaks = seq(-1,1, by=.2)) 
-
-# work with mapview
-mapview(ff_19, maxpixels = 5822533) +
-  mapview(ff_21, maxpixels =  9766632) +
-  mapview(ff_76, maxpixels =  3132435) +
-  mapview(ff_77, maxpixels =  4437807) +
-  mapview(ff_78, maxpixels =  11794956) +
-  mapview(ff_91, maxpixels =  12439104)
-
-mapviewOptions(georaster = TRUE,
-               mapview.maxpixels = 83352564)
-  
-mapview(ff, maxpixels =  65831652) 
-
-```
-
 Try with leaflet
 
 ```{r leaf}
@@ -95,7 +63,9 @@ cb <- colorBin(palette = colores, bins = at, domain = at,
 
 map <- leaflet(sensors) %>%
   addProviderTiles(providers$CartoDB.Positron) %>% 
-  addCircles(popup = ~htmlEscape(site)) %>%
+  addCircles(popup = ~htmlEscape(paste('Site:',
+                                       site)),
+             color = 'black') %>%
   addPolygons(data = wbdhu8,
               color = 'black',
               weight = 2,
@@ -106,10 +76,19 @@ map <- leaflet(sensors) %>%
   addRasterImage(ff,
                 maxBytes = 16852306,
                 colors = cb,
+                layerId = 'values',
                 project = F) %>%
+  #addMouseCoordinates() %>%
+  # leafem::addImageQuery(ff,
+  #               layerId = 'values',
+  #               type='mousemove',
+  #               digits=3,
+  #               position = 'topright',
+  #               prefix='Flow fraction value') %>% 
   addLegend(pal = cb,
            values = at,
-           title = 'Flow fraction')
+           title = 'Flow fraction') %>%
+  addScaleBar(position = 'bottomleft')
 
 map
 

@@ -46,9 +46,7 @@ ff <- projectRaster(ff, crs = crs_target)
 
 ```
 
-Try with leaflet
-
-```{r leaf}
+```{r process, echo = F, message = F, warning = F, include = F}
 
 st_sites %>% st_transform(., '+proj=longlat +datum=NAD83 +no_defs')
 
@@ -60,6 +58,10 @@ colores <- c('#FF2B18', '#FF8C0B', '#FDD11C', '#E9FD49', '#BEFD97', '#7BFDD6',
 at <- seq(0, 1, 0.1)
 cb <- colorBin(palette = colores, bins = at, domain = at,
                na.color = 'transparent')
+```
+
+
+```{r leaf, echo = F, message = F, warning = F, fig.width= 12, fig.height=10}
 
 map <- leaflet(sensors) %>%
   addProviderTiles(providers$CartoDB.Positron) %>% 

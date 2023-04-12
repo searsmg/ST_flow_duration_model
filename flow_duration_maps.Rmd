@@ -1,6 +1,6 @@
 ---
 title: "Streamtracker flow duration map"
-author: "David Peterson, Stephanie Kampf, Megan Sears"
+author: "DRAFT (TEMPORARILY STORED ON GITHUB)"
 date: '`r Sys.Date()`'
 output: html_document
 editor_options: 
@@ -42,7 +42,7 @@ ff[ff < 0] <- NA
 
 crs_target <- CRS("+init=EPSG:4269")
 
-ff <- projectRaster(ff, crs = crs_target)
+#ff <- projectRaster(ff, crs = crs_target)
 
 ```
 
@@ -85,7 +85,8 @@ map <- leaflet(sensors) %>%
                 maxBytes = 16852306,
                 colors = cb,
                 layerId = 'values',
-                project = F) %>%
+                project = F,
+                opacity = 0.75) %>%
   #addMouseCoordinates() %>%
   # leafem::addImageQuery(ff,
   #               layerId = 'values',

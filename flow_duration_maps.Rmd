@@ -69,10 +69,12 @@ cb <- colorBin(palette = colores, bins = at, domain = at,
 ```{r leaf, echo = F, message = F, warning = F, fig.width= 12, fig.height=10}
 
 map <- leaflet(sensors) %>%
-  addProviderTiles(providers$CartoDB.Positron) %>% 
+  clearTiles() %>% 
   addCircles(popup = ~htmlEscape(paste('Site:',
                                        site)),
-             color = 'black') %>%
+             color = 'black',
+             weight = 5,
+             opacity = 0.8) %>%
   addPolygons(data = wbdhu8,
               color = 'black',
               weight = 2,
@@ -86,7 +88,8 @@ map <- leaflet(sensors) %>%
                 colors = cb,
                 layerId = 'values',
                 project = F,
-                opacity = 0.75) %>%
+                opacity = 0.80,
+                group = "Flow fraction") %>%
   #addMouseCoordinates() %>%
   # leafem::addImageQuery(ff,
   #               layerId = 'values',
@@ -97,9 +100,20 @@ map <- leaflet(sensors) %>%
   addLegend(pal = cb,
            values = at,
            title = 'Flow fraction') %>%
-  addScaleBar(position = 'bottomleft')
+  addScaleBar(position = 'bottomleft') %>% 
+  addProviderTiles('Esri.WorldTopoMap', group = "Esri.WorldTopoMap",
+         options = providerTileOptions(zIndex=-10)) %>%
+  addProviderTiles(providers$Esri.WorldImagery, group = "Esri.WorldImagery",
+           options = providerTileOptions(zIndex=-10)) %>%
+  addProviderTiles(providers$Esri.WorldStreetMap, group = "Esri.WorldStreetMap",
+           options = providerTileOptions(zIndex=-10)) %>%
+  addLayersControl(baseGroups = c('Esri.WorldTopoMap', 'Esri.WorldImagery', "Esri.WorldStreetMap"),
+                   overlayGroups = "Flow fraction",
+                   options = layersControlOptions(collapsed = T,
+                                   autoZindex = FALSE))
 
 map
 
 ```
+
 

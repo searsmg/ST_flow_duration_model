@@ -1,0 +1,116 @@
+---
+title: "Stream Tracker flow duration map"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F,
+                      message = F,
+                      warning = F)
+
+library(tidyverse)
+library(mapview)
+library(tmap)
+library(sp)
+library(raster)
+library(sf)
+library(here)
+library(rgdal)
+library(leaflet)
+library(htmltools)
+library(leafem)
+
+```
+
+```{r maps, echo = F, message = F, warning = F, include = F}
+
+sensors <- st_read(here('data', 'sensor_st_pts.shp'))
+#nhd_hr <- readOGR(here('data', 'NHD_HR_flowlines.shp'))
+nhd_mr <- readOGR(here('data', 'NHD_MR_flowlines.shp'))
+#st_sites <- st_read(here('data', 'ST Sites.shp'))
+#st_test_sites <- st_read(here('data', 'ST Test Sites.shp'))
+wbdhu8 <- st_read(here('data', 'WBDHU8.shp'))
+
+#read in FF_predictions raster
+ff <- raster(here('data', "predicted_flow_fraction.tif"))
+
+ff[ff < 0] <- NA
+
+crs_target <- CRS("+init=EPSG:4269")
+
+#ff <- projectRaster(ff, crs = crs_target)
+
+```
+
+```{r process, echo = F, message = F, warning = F, include = F}
+
+#st_sites %>% st_transform(., '+proj=longlat +datum=NAD83 +no_defs')
+
+
+# 3857 
+ff <- projectRaster(ff, crs = 3857)
+#sensors <- st_transform(sensors, 3857)
+#wbdhu8 <- st_transform(wbdhu8, 3857)
+#nhd_mr <- st_crs(3857) 
+#nhd_mr <- st_transform(nhd_mr, 3857)
+
+colores <- c('#FF2B18', '#FF8C0B', '#FDD11C', '#E9FD49', '#BEFD97', '#7BFDD6',
+                      '#2FE8FF', '#62A9FE', '#6A68FE', '#5813FC')
+at <- seq(0, 1, 0.1)
+cb <- colorBin(palette = colores, bins = at, domain = at,
+               na.color = 'transparent')
+```
+
+
+```{r leaf, echo = F, message = F, warning = F, fig.width= 3, fig.height=10}
+
+map <- leaflet(sensors) %>%
+  clearTiles() %>% 
+  addCircles(popup = ~htmlEscape(paste('Site:',
+                                       site)),
+             color = 'black',
+             weight = 5,
+             opacity = 0.8) %>%
+  addPolygons(data = wbdhu8,
+              color = 'black',
+              weight = 2,
+              fill = F) %>%
+  addPolylines(data = nhd_mr,
+               color = 'black',
+               weight = 1,
+               popup = ~htmlEscape(paste('NHD ID:', GNIS_ID))) %>%
+  addRasterImage(ff,
+                maxBytes = 16852306,
+                colors = cb,
+                layerId = 'values',
+                project = F,
+                opacity = 0.80,
+                group = "Flow fraction") %>%
+  #addMouseCoordinates() %>%
+  # leafem::addImageQuery(ff,
+  #               layerId = 'values',
+  #               type='mousemove',
+  #               digits=3,
+  #               position = 'topright',
+  #               prefix='Flow fraction value') %>% 
+  addLegend(pal = cb,
+           values = at,
+           title = 'Flow fraction') %>%
+  addScaleBar(position = 'bottomleft') %>% 
+  addProviderTiles('Esri.WorldTopoMap', group = "Esri.WorldTopoMap",
+         options = providerTileOptions(zIndex=-10)) %>%
+  addProviderTiles(providers$Esri.WorldImagery, group = "Esri.WorldImagery",
+           options = providerTileOptions(zIndex=-10)) %>%
+  addProviderTiles(providers$Esri.WorldStreetMap, group = "Esri.WorldStreetMap",
+           options = providerTileOptions(zIndex=-10)) %>%
+  addLayersControl(baseGroups = c('Esri.WorldTopoMap', 'Esri.WorldImagery', "Esri.WorldStreetMap"),
+                   overlayGroups = "Flow fraction",
+                   options = layersControlOptions(collapsed = T,
+                                   autoZindex = FALSE))
+
+map
+
+```
+

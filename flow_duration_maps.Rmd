@@ -1,7 +1,5 @@
 ---
-title: "Streamtracker flow duration map"
-author: "DRAFT (TEMPORARILY STORED ON GITHUB)"
-date: '`r Sys.Date()`'
+title: "Stream Tracker flow duration map"
 output: html_document
 editor_options: 
   chunk_output_type: console
@@ -114,7 +112,6 @@ map <- leaflet(sensors) %>%
 
 map
 
-#test
 ```
 
 
